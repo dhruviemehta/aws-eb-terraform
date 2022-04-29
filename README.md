@@ -1,1 +1,1 @@
-# aws-eb-terraform
+# flask-weather-app
