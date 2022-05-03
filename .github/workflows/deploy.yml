@@ -11,7 +11,6 @@ jobs:
 
     steps:
 
-    - name: Checkout source code
     - uses: actions/checkout@v2
 
     - name: Create ZIP deployment package
