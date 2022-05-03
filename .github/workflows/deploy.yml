@@ -2,49 +2,28 @@ name: deploy-to-eb
 
 on:
   push:
-    branches: [ main ]
+    branches:
+    - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-            python-version: [3.8]
 
     steps:
+
+      - name: Checkout source code
       - uses: actions/checkout@v2
 
-      - name: Initialize Python 3.8
-        uses: actions/setup-python@v1
+      - name: Create ZIP deployment package
+        run: zip -r deploy_package.zip . -x '*.git*'
+
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v20
         with:
-          python-version: ${{matrix.python-version}}
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          python WeatherPredictionApp.py
-
-      # - name: Create ZIP deployment package
-      #   run: zip -r deploy_package.zip ./
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: "ap-south-1"
-
-      # - name: Upload package to S3 bucket
-      #   run: aws s3 cp deploy_package.zip s3://terraform-state-demo-temp/
-
-      - name: Create new ElasticBeanstalk Application Version
-        run: |
-          aws elasticbeanstalk create-application-version \
-          --application-name flask-weather-app \
-          --source-bundle S3Bucket="terraform-state-demo-temp",S3Key="deploy_package.zip" \
-          --version-label "ver-${{ github.sha }}" \
-          --description "commit-sha-${{ github.sha }}"
-
-      - name: Deploy new ElasticBeanstalk Application Version
-        run: aws elasticbeanstalk update-environment --environment-name flask-weather-app-environment --version-label "ver-${{ github.sha }}"
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: flask-weather-app
+          environment_name: flask-weather-app-environment
+          version_label: $ {{ githu.sha }}
+          region: ap-south-1
+          deployment_package: deploy.zip
