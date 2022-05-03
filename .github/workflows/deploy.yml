@@ -23,9 +23,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          python WeatherPredictionApp.py
 
-      - name: Create ZIP deployment package
-        run: zip -r deploy_package.zip ./
+      # - name: Create ZIP deployment package
+      #   run: zip -r deploy_package.zip ./
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -34,8 +35,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: "ap-south-1"
 
-      - name: Upload package to S3 bucket
-        run: aws s3 cp deploy_package.zip s3://terraform-state-demo-temp/
+      # - name: Upload package to S3 bucket
+      #   run: aws s3 cp deploy_package.zip s3://terraform-state-demo-temp/
 
       - name: Create new ElasticBeanstalk Application Version
         run: |
